@@ -18,6 +18,8 @@ type SchemaNode struct {
 	Support    uint32      // total frequency of the node in the path
 }
 
+const firstChildren = 3
+
 //newRootNode creates a new root node for a given propMap
 func newRootNode(pMap propMap) SchemaNode {
 	// return schemaNode{newRootiItem(), nil, make(map[*iItem]*schemaNode), nil, 0, nil}
@@ -47,7 +49,7 @@ func (node *SchemaNode) writeGob(e *gob.Encoder) error {
 		return children[i].ID.TotalCount < children[j].ID.TotalCount
 	})
 
-	if len(children) <= 5 {
+	if len(children) <= firstChildren {
 		err = e.Encode(len(children))
 		if err != nil {
 			return err
@@ -63,21 +65,21 @@ func (node *SchemaNode) writeGob(e *gob.Encoder) error {
 			return err
 		}
 	} else {
-		err = e.Encode(5)
+		err = e.Encode(firstChildren)
 		if err != nil {
 			return err
 		}
-		for _, child := range children[0:5] {
+		for _, child := range children[0:firstChildren] {
 			err = child.writeGob(e)
 			if err != nil {
 				return err
 			}
 		}
-		err = e.Encode(int(len(children) - 5))
+		err = e.Encode(int(len(children) - firstChildren))
 		if err != nil {
 			return err
 		}
-		for _, child := range children[5:] {
+		for _, child := range children[firstChildren:] {
 			err = child.writeGob(e)
 			if err != nil {
 				return err
