@@ -118,26 +118,6 @@ func (tree *SchemaTree) updateSortOrder() {
 	}
 }
 
-// Support returns the total cooccurrence-frequency of the given property list
-func (tree *SchemaTree) Support(properties IList) uint32 {
-	var support uint32
-
-	if len(properties) == 0 {
-		return tree.Root.Support // empty set occured in all transactions
-	}
-
-	properties.Sort() // descending by support
-
-	// check all branches that include least frequent term
-	for term := properties[len(properties)-1].traversalPointer; term != nil; term = term.nextSameID {
-		if term.prefixContains(properties) {
-			support += term.Support
-		}
-	}
-
-	return support
-}
-
 // Save stores a binarized version of the schematree to the given filepath
 func (tree *SchemaTree) Save(filePath string) error {
 	t1 := time.Now()

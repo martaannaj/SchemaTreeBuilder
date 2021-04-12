@@ -34,7 +34,7 @@ func main() {
 
 	// root command
 	cmdRoot := &cobra.Command{
-		Use: "recommender",
+		Use: "SchemaTreeBuilder",
 
 		// Execute global pre-run activities such as profiling.
 		PersistentPreRun: func(cmd *cobra.Command, args []string) {

@@ -3,7 +3,7 @@ package schematree
 import (
 	"testing"
 
-	"github.com/stretchr/testify/assert"
+	"testify/assert"
 )
 
 var filePath = "../testdata/test.nt.gz"
