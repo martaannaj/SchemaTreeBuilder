@@ -150,7 +150,7 @@ func main() {
 		&writeOutPropertyFreqs, "write-frequencies", "f", false,
 		"write all property frequencies to a csv file named '<dataset>.propertyFreqs.csv' after the SchemaTree is built",
 	)
-	cmdBuildTreeTyped.Flags().IntVar(&numPointersInNode, "number-pointers", 3, "The number of pointers sotred directly in the node") // TODO: handle negative inputs
+	cmdBuildTreeTyped.Flags().IntVar(&numPointersInNode, "num-pointers-typed", 3, "The number of pointers sotred directly in the node") // TODO: handle negative inputs
 
 	// subcommand build-tree
 	cmdBuildTree := &cobra.Command{
@@ -186,7 +186,7 @@ func main() {
 		&writeOutPropertyFreqs, "write-frequencies", "f", false,
 		"write all property frequencies to a csv file named '<dataset>.propertyFreqs.csv' after the SchemaTree is built",
 	)
-	cmdBuildTreeTyped.Flags().IntVar(&numPointersInNode, "number-pointers", 3, "The number of pointers sotred directly in the node") // TODO: handle negative inputs
+	cmdBuildTreeTyped.Flags().IntVar(&numPointersInNode, "num-pointers", 3, "The number of pointers sotred directly in the node") // TODO: handle negative inputs
 
 	// subcommand split-dataset
 	cmdSplitDataset := &cobra.Command{
