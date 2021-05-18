@@ -18,8 +18,6 @@ type SchemaNode struct {
 	Support    uint32      // total frequency of the node in the path
 }
 
-const firstChildren = 3
-
 //newRootNode creates a new root node for a given propMap
 func newRootNode(pMap propMap) SchemaNode {
 	// return schemaNode{newRootiItem(), nil, make(map[*iItem]*schemaNode), nil, 0, nil}
@@ -27,7 +25,7 @@ func newRootNode(pMap propMap) SchemaNode {
 }
 
 //writeGob encodes the schema node into a binary representation
-func (node *SchemaNode) writeGob(e *gob.Encoder) error {
+func (node *SchemaNode) writeGob(e *gob.Encoder, numPointers int) error {
 	// ID
 	err := e.Encode(node.ID.SortOrder)
 	if err != nil {
@@ -49,13 +47,13 @@ func (node *SchemaNode) writeGob(e *gob.Encoder) error {
 		return children[i].ID.TotalCount < children[j].ID.TotalCount
 	})
 
-	if len(children) <= firstChildren {
+	if len(children) <= numPointers {
 		err = e.Encode(len(children))
 		if err != nil {
 			return err
 		}
 		for _, child := range children {
-			err = child.writeGob(e)
+			err = child.writeGob(e, numPointers)
 			if err != nil {
 				return err
 			}
@@ -65,22 +63,22 @@ func (node *SchemaNode) writeGob(e *gob.Encoder) error {
 			return err
 		}
 	} else {
-		err = e.Encode(firstChildren)
+		err = e.Encode(numPointers)
 		if err != nil {
 			return err
 		}
-		for _, child := range children[0:firstChildren] {
-			err = child.writeGob(e)
+		for _, child := range children[0:numPointers] {
+			err = child.writeGob(e, numPointers)
 			if err != nil {
 				return err
 			}
 		}
-		err = e.Encode(int(len(children) - firstChildren))
+		err = e.Encode(int(len(children) - numPointers))
 		if err != nil {
 			return err
 		}
-		for _, child := range children[firstChildren:] {
-			err = child.writeGob(e)
+		for _, child := range children[numPointers:] {
+			err = child.writeGob(e, numPointers)
 			if err != nil {
 				return err
 			}
