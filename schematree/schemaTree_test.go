@@ -32,12 +32,12 @@ func untypedTreeTest(t *testing.T, tree *SchemaTree) {
 func TestCreate(t *testing.T) {
 
 	t.Run("TypedSchemaTree", func(t *testing.T) {
-		tree, _ := Create(filePath, 0, true, 1)
+		tree, _ := Create(filePath, 0, true, 1, 0)
 		typedTreeTest(t, tree)
 	})
 
 	t.Run("UntypedSchemaTree", func(t *testing.T) {
-		tree, _ := Create(filePath, 0, false, 1)
+		tree, _ := Create(filePath, 0, false, 1, 0)
 		untypedTreeTest(t, tree)
 	})
 }

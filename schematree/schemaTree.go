@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"sort"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -22,15 +23,15 @@ type SchemaTree struct {
 }
 
 // Create creates a new schema tree from given dataset with given first n subjects, typed and minSup
-func Create(filename string, firstNsubjects uint64, typed bool, minSup uint32) (*SchemaTree, error) {
+func Create(filename string, firstNsubjects uint64, typed bool, minSup uint32, numPointers int) (*SchemaTree, error) {
 
 	schema := New(typed, minSup)
 	schema.TwoPass(filename, uint64(firstNsubjects))
 	var err error
 	if typed {
-		err = schema.Save(filename + ".schemaTree.typed.bin")
+		err = schema.Save(filename+strconv.Itoa(numPointers)+".schemaTree.typed.nodes.bin", numPointers)
 	} else {
-		err = schema.Save(filename + ".schemaTree.bin")
+		err = schema.Save(filename+strconv.Itoa(numPointers)+".schemaTree.nodes.bin", numPointers)
 	}
 	PrintMemUsage()
 	return schema, err
@@ -119,7 +120,7 @@ func (tree *SchemaTree) updateSortOrder() {
 }
 
 // Save stores a binarized version of the schematree to the given filepath
-func (tree *SchemaTree) Save(filePath string) error {
+func (tree *SchemaTree) Save(filePath string, numPointers int) error {
 	t1 := time.Now()
 	fmt.Printf("Writing schema to file %v... ", filePath)
 
@@ -151,7 +152,7 @@ func (tree *SchemaTree) Save(filePath string) error {
 	}
 
 	// encode root
-	err = tree.Root.writeGob(e)
+	err = tree.Root.writeGob(e, numPointers)
 
 	// encode Typed
 	if tree.Typed {
