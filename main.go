@@ -148,6 +148,42 @@ func main() {
 		&writeOutPropertyFreqs, "write-frequencies", "f", false,
 		"write all property frequencies to a csv file named '<dataset>.propertyFreqs.csv' after the SchemaTree is built",
 	)
+	cmdBuildTreeTyped.Flags().IntVar(&numPointersInNode, "num-pointers-typed", 3, "The number of pointers sotred directly in the node") // TODO: handle negative inputs
+
+	// subcommand build-tree
+	cmdBuildTree := &cobra.Command{
+		Use:   "build-tree <dataset>",
+		Short: "Build the SchemaTree model",
+		Long: "A SchemaTree model will be built using the file provided in <dataset>." +
+			" The dataset should be a N-Triple of Items.\nTwo output files will be" +
+			" generated in the same directory as <dataset> and with suffixed names, namely:" +
+			" '<dataset>.firstPass.bin' and '<dataset>.schemaTree.bin'",
+		Args: cobra.ExactArgs(1),
+
+		Run: func(cmd *cobra.Command, args []string) {
+			inputDataset := &args[0]
+
+			// Create the tree output file by using the input dataset.
+			schema, err := schematree.Create(*inputDataset, uint64(firstNsubjects), false, 0)
+			if err != nil {
+				log.Panicln(err)
+			}
+
+			if writeOutPropertyFreqs {
+				propFreqsPath := *inputDataset + ".propertyFreqs.csv"
+				schema.WritePropFreqs(propFreqsPath)
+				fmt.Printf("Wrote PropertyFreqs to %s\n", propFreqsPath)
+			}
+
+		},
+	}
+	// cmdBuildTree.Flags().StringVarP(&inputDataset, "dataset", "d", "", "`path` to the dataset file to parse")
+	// cmdBuildTree.MarkFlagRequired("dataset")
+	cmdBuildTree.Flags().Int64VarP(&firstNsubjects, "first", "n", 0, "only parse the first `n` subjects") // TODO: handle negative inputs
+	cmdBuildTree.Flags().BoolVarP(
+		&writeOutPropertyFreqs, "write-frequencies", "f", false,
+		"write all property frequencies to a csv file named '<dataset>.propertyFreqs.csv' after the SchemaTree is built",
+	)
 
 	// subcommand split-dataset
 	cmdSplitDataset := &cobra.Command{
@@ -188,6 +224,24 @@ func main() {
 		},
 	}
 
+	// subsubcommand split-dataset 1-in-n
+	cmdSplitDatasetBySampling := &cobra.Command{
+		Use:   "1-in-n <dataset>",
+		Short: "Split a dataset using systematic sampling",
+		Long: "Split a N-Triple <dataset> file into two files where every Nth subject goes into" +
+			" one file and the rest into the second file.\nThe split files are generated in the same directory" +
+			" as the <dataset>, stripped of their compression extension and given the following" +
+			" names: <base>-1in<n>-test.nt.gz, <base>-1in<n>-train.nt.gz\n" +
+			"This method assumes that all entries for a given subject are defined in contiguous lines.",
+		Args: cobra.ExactArgs(1),
+
+		Run: func(cmd *cobra.Command, args []string) {
+			inputDataset := &args[0]
+			preparation.SplitBySampling(*inputDataset, int64(everyNthSubject))
+		},
+	}
+	cmdSplitDatasetBySampling.Flags().UintVarP(&everyNthSubject, "nth", "n", 1000, "split every N-th subject")
+
 	// subcommand filter-dataset
 	cmdFilterDataset := &cobra.Command{
 		Use:   "filter-dataset",
@@ -226,8 +280,10 @@ func main() {
 	// putting the command hierarchy together
 	cmdRoot.AddCommand(cmdSplitDataset)
 	cmdSplitDataset.AddCommand(cmdSplitDatasetByPrefix)
+	cmdSplitDataset.AddCommand(cmdSplitDatasetBySampling)
 	cmdRoot.AddCommand(cmdFilterDataset)
 	cmdFilterDataset.AddCommand(cmdFilterDatasetForSchematree)
+	cmdRoot.AddCommand(cmdBuildTree)
 	cmdRoot.AddCommand(cmdBuildTreeTyped)
 
 	// Start the CLI application
