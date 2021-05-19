@@ -26,6 +26,7 @@ func main() {
 	var measureTime bool                         // used globally
 	var firstNsubjects int64                     // used by build-tree
 	var writeOutPropertyFreqs bool               // used by build-tree
+	var everyNthSubject uint                     // used by split-dataset:1-in-n
 
 	// Setup helper variables
 	var timeCheckpoint time.Time // used globally
@@ -148,7 +149,6 @@ func main() {
 		&writeOutPropertyFreqs, "write-frequencies", "f", false,
 		"write all property frequencies to a csv file named '<dataset>.propertyFreqs.csv' after the SchemaTree is built",
 	)
-	cmdBuildTreeTyped.Flags().IntVar(&numPointersInNode, "num-pointers-typed", 3, "The number of pointers sotred directly in the node") // TODO: handle negative inputs
 
 	// subcommand build-tree
 	cmdBuildTree := &cobra.Command{
