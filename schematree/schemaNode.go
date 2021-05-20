@@ -46,7 +46,7 @@ func (node *SchemaNode) writeGob(e *gob.Encoder) error {
 	}
 
 	sort.Slice(children, func(i, j int) bool {
-		return children[i].ID.TotalCount < children[j].ID.TotalCount
+		return children[i].ID.TotalCount > children[j].ID.TotalCount
 	})
 
 	if len(children) <= firstChildren {
