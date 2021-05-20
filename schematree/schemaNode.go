@@ -40,19 +40,52 @@ func (node *SchemaNode) writeGob(e *gob.Encoder) error {
 		return err
 	}
 
-	// Children
-	err = e.Encode(len(node.Children))
-	if err != nil {
-		return err
+	children := make([]SchemaNode, len(node.Children), len(node.Children))
+	for i, child := range node.Children {
+		children[i] = *child
 	}
 
-	for _, child := range node.Children {
-		err = child.writeGob(e)
+	sort.Slice(children, func(i, j int) bool {
+		return children[i].ID.TotalCount > children[j].ID.TotalCount
+	})
+
+	if len(children) <= firstChildren {
+		err = e.Encode(len(children))
 		if err != nil {
 			return err
 		}
+		for _, child := range children {
+			err = child.writeGob(e)
+			if err != nil {
+				return err
+			}
+		}
+		err = e.Encode(0)
+		if err != nil {
+			return err
+		}
+	} else {
+		err = e.Encode(firstChildren)
+		if err != nil {
+			return err
+		}
+		for _, child := range children[0:firstChildren] {
+			err = child.writeGob(e)
+			if err != nil {
+				return err
+			}
+		}
+		err = e.Encode(int(len(children) - firstChildren))
+		if err != nil {
+			return err
+		}
+		for _, child := range children[firstChildren:] {
+			err = child.writeGob(e)
+			if err != nil {
+				return err
+			}
+		}
 	}
-
 	return nil
 }
 
