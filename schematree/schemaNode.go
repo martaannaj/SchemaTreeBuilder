@@ -25,7 +25,7 @@ func newRootNode(pMap propMap) SchemaNode {
 }
 
 //writeGob encodes the schema node into a binary representation
-func (node *SchemaNode) writeGob(e *gob.Encoder, numPointers int) error {
+func (node *SchemaNode) writeGob(e *gob.Encoder) error {
 	// ID
 	err := e.Encode(node.ID.SortOrder)
 	if err != nil {
@@ -38,52 +38,18 @@ func (node *SchemaNode) writeGob(e *gob.Encoder, numPointers int) error {
 		return err
 	}
 
-	children := make([]SchemaNode, len(node.Children), len(node.Children))
-	for i, child := range node.Children {
-		children[i] = *child
+	// Children
+	err = e.Encode(len(node.Children))
+	if err != nil {
+		return err
+	}
+	for _, child := range node.Children {
+		err = child.writeGob(e)
+		if err != nil {
+			return err
+		}
 	}
 
-	sort.Slice(children, func(i, j int) bool {
-		return children[i].ID.TotalCount < children[j].ID.TotalCount
-	})
-
-	if len(children) <= numPointers {
-		err = e.Encode(len(children))
-		if err != nil {
-			return err
-		}
-		for _, child := range children {
-			err = child.writeGob(e, numPointers)
-			if err != nil {
-				return err
-			}
-		}
-		err = e.Encode(0)
-		if err != nil {
-			return err
-		}
-	} else {
-		err = e.Encode(numPointers)
-		if err != nil {
-			return err
-		}
-		for _, child := range children[0:numPointers] {
-			err = child.writeGob(e, numPointers)
-			if err != nil {
-				return err
-			}
-		}
-		err = e.Encode(int(len(children) - numPointers))
-		if err != nil {
-			return err
-		}
-		for _, child := range children[numPointers:] {
-			err = child.writeGob(e, numPointers)
-			if err != nil {
-				return err
-			}
-		}
-	}
 	return nil
 }
 
